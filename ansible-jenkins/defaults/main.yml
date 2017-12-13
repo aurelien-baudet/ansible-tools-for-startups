@@ -1,0 +1,26 @@
+---
+# global security
+jenkins_security_type: full-control-once-logged
+
+# admin user (also used by cli)
+jenkins_admin_username: admin
+jenkins_admin_password: admin
+jenkins_admin_email: ""
+
+# local accounts
+jenkins_create_local_accounts_enabled: true
+
+# bitbucket
+jenkins_bitbucket_autodiscovery_job_enabled: true
+jenkins_bitbucket_credentials_id: bitbucket
+jenkins_bitbucket_projects_scan_for_projects_interval: 86400000
+jenkins_bitbucket_max_days_to_keep: -1
+jenkins_bitbucket_max_num_to_keep: -1
+jenkins_bitbucket_server_url: https://bitbucket.org
+jenkins_bitbucket_autodiscovery_job_name: 'Autodiscovery - Bitbucket'
+jenkins_bitbucket_autodiscovery_job_autostart: true
+
+# Jenkins HTTP API
+jenkins_http_api_url: http://localhost:{{ jenkins_port }}{{ jenkins_context_path | default('') }}
+
+temp_dir: /tmp

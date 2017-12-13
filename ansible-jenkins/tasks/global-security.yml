@@ -1,0 +1,14 @@
+# Configure security strategy
+- name: Copy groovy file for security strategy
+  template:
+    src: "{{ jenkins_security_type|lower }}-security.groovy"
+    dest: "{{ temp_dir }}/{{ jenkins_security_type|lower }}-security.groovy"
+    owner: jenkins
+    group: jenkins
+
+- name: Configure Security
+  shell: "cat {{ temp_dir }}/{{ jenkins_security_type|lower }}-security.groovy | {{ jenkins_cli_command }} groovy ="
+  become: true
+  become_user: jenkins
+  register: shell_jenkins_security
+  changed_when: "(shell_jenkins_security | success) and 'Changed' not in shell_jenkins_security.stdout"

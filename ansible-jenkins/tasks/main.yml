@@ -1,0 +1,18 @@
+---
+- import_tasks: docker.yml
+
+- import_tasks: cli.yml
+
+- import_tasks: global-security.yml
+
+- import_tasks: global-smtp.yml
+
+# TODO: disabled when using external authentication (OAuth, LDAP, ...)
+- import_tasks: local-accounts.yml
+  when: jenkins_create_local_accounts_enabled|bool
+
+- import_tasks: bitbucket-credentials.yml
+  when: jenkins_bitbucket_credentials_id|default('') != ''
+
+- import_tasks: bitbucket-credentials.yml
+  when: jenkins_bitbucket_autodiscovery_job_name|default('') != ''

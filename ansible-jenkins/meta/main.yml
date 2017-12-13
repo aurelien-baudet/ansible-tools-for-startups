@@ -1,0 +1,32 @@
+galaxy_info:
+  author: Aurélien Baudet
+  description: Install Jenkins 2 with required dependencies (Java and Docker). Configure security, accounts and jobs
+
+  license: MIT
+
+  min_ansible_version: 2.4
+
+  platforms:
+    - name: Ubuntu
+      versions:
+        - xenial
+
+  galaxy_tags: 
+    - jenkins2
+    - jenkins
+    - ci
+    - development
+    - java
+    - docker
+    - ContinuousIntegration
+    - CD
+    - ContinuousDelivery
+    
+allow_duplicates: true
+
+# dependencies in order to automatically install docker and Jenkins
+# and be able to notify handlers
+dependencies:
+- role: mrlesmithjr.oracle-java8
+- role: mongrelion.docker
+- role: karlmdavis.ansible-role-jenkins2

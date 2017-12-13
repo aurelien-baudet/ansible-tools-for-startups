@@ -1,0 +1,54 @@
+# Check if project already exists
+- name: Is Bitbucket already autodiscovery job exist
+  shell: "{{ jenkins_cli_command }} get-job {{ jenkins_bitbucket_autodiscovery_job_name | quote }}"
+  become: true
+  become_user: jenkins
+  register: shell_jenkins_cli_autodiscover_bitbucket_job_exists
+  ignore_errors: true
+
+
+# Workaround because setting boolean values doesn't seem to work...
+- set_fact:
+    create_autodiscover_job: no
+- set_fact:
+    create_autodiscover_job: yes
+  when: "'No such job' in shell_jenkins_cli_autodiscover_bitbucket_job_exists.stderr"
+    
+  
+# Add autodiscovery for Bitbucket projects
+- name: Copy xml file for creating Bitbucket autodiscovery job
+  template:
+    src: auto-discover-bitbucket-projects.xml
+    dest: "{{ temp_dir }}/auto-discover-bitbucket-projects.xml"
+    owner: jenkins
+    group: jenkins
+  vars:
+    credentials_id: "{{ jenkins_bitbucket_credentials_id }}"
+    credentials_username: "{{ jenkins_bitbucket_ci_account }}"
+    credentials_password: "{{ jenkins_bitbucket_ci_password }}"
+  when: create_autodiscover_job|bool
+
+
+- name: Add Bitbucket autodiscovery job
+  shell: "cat {{ temp_dir }}/auto-discover-bitbucket-projects.xml | {{ jenkins_cli_command }} create-job {{ jenkins_bitbucket_autodiscovery_job_name | quote }}"
+  become: true
+  become_user: jenkins
+  register: shell_jenkins_cli_autodiscover_bitbucket_projects
+  failed_when: shell_jenkins_cli_autodiscover_bitbucket_projects.rc > 1
+  changed_when: "(shell_jenkins_cli_autodiscover_bitbucket_projects | success) and 'Changed' not in shell_jenkins_cli_autodiscover_bitbucket_projects.stdout"
+  when: create_autodiscover_job|bool
+
+
+- name: Start autodiscovery job
+  uri:
+    method: POST
+    url: "{{ jenkins_http_api_url }}/job/{{ jenkins_bitbucket_autodiscovery_job_name|urlencode }}/build"
+    user: "{{ jenkins_admin_username }}"
+    password: "{{ jenkins_admin_password }}"
+    force_basic_auth: yes
+    body_format: json
+    body: {}
+    status_code: 200,302
+  when: jenkins_bitbucket_autodiscovery_job_autostart
+    
+  

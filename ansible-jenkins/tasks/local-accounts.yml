@@ -1,0 +1,21 @@
+# Add local accounts
+- name: Copy groovy file for each account
+  template:
+    src: add-account.groovy
+    dest: "{{ temp_dir }}/add-account-{{ item.username }}.groovy"
+    owner: jenkins
+    group: jenkins
+  vars:
+    account_username: "{{ item.username }}"
+    account_password: "{{ item.password }}"
+    account_email: "{{ item.email }}"
+  with_items: "{{ jenkins_accounts }}"
+
+- name: Add accounts
+  shell: "cat {{ temp_dir }}/add-account-{{ item.username }}.groovy | {{ jenkins_cli_command }} groovy ="
+  with_items: "{{ jenkins_accounts }}"
+  become: true
+  become_user: jenkins
+  register: shell_jenkins_accounts
+  changed_when: "(shell_jenkins_accounts | success) and 'Changed' not in shell_jenkins_accounts.stdout"
+  

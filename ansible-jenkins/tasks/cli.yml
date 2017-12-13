@@ -1,0 +1,27 @@
+# Add default user for CLI
+- name: Copy groovy file for CLI account
+  template:
+    src: add-cli-account.groovy
+    dest: "{{ temp_dir }}/add-cli-account-{{ jenkins_admin_username }}.groovy"
+    owner: jenkins
+    group: jenkins
+  vars:
+    account_username: "{{ jenkins_admin_username }}"
+    account_password: "{{ jenkins_admin_password }}"
+    account_email: "{{ jenkins_admin_email }}"
+    account_ssh_key: "{{ jenkins_user_ssh_public_key }}"
+
+- name: Add admin user for CLI
+  shell: "cat {{ temp_dir }}/groovy/add-cli-account-{{ jenkins_admin_username }}.groovy | {{ jenkins_cli_command }} groovy ="
+  become: true
+  become_user: jenkins
+  register: shell_jenkins_cli_user
+  changed_when: "(shell_jenkins_cli_user | success) and 'Changed' not in shell_jenkins_cli_user.stdout"
+
+# This variable has to be updated if later tasks in the same playbook
+# execution will use the Jenkins CLI.
+- name: Update Jenkins CLI Command
+  set_fact:
+    jenkins_cli_command: "{{ jenkins_cli_command }} -ssh -user {{ jenkins_admin_username }}"
+  when: "' -ssh -user {{ jenkins_admin_username }}' not in jenkins_cli_command"
+
